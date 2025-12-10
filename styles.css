@@ -300,6 +300,40 @@ textarea:focus {
     "Liberation Mono", "Courier New", monospace;
 }
 
+/* Suggestion box */
+
+.suggestions {
+  margin-top: 8px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  max-height: 180px;
+  overflow-y: auto;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+
+.suggestion-item {
+  padding: 6px 10px;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.suggestion-item:hover {
+  background: #eff6ff;
+}
+
+.suggestion-primary {
+  font-weight: 500;
+}
+
+.suggestion-secondary {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
 /* Messages */
 
 .message {
