@@ -38,15 +38,15 @@ body {
 .app-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .app-logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
   object-fit: cover;
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.25);
   background: #ffffff;
 }
 
@@ -58,7 +58,7 @@ body {
 .brand-title {
   font-weight: 700;
   letter-spacing: 0.02em;
-  font-size: 18px;
+  font-size: 19px;
 }
 
 .brand-subtitle {
@@ -304,6 +304,11 @@ textarea:focus {
 .summary-value {
   font-size: 18px;
   font-weight: 700;
+}
+
+.chart-wrapper {
+  margin-top: 8px;
+  margin-bottom: 10px;
 }
 
 /* Tables */
