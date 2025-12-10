@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vaccine Service Console</title>
+
+  <!-- Favicon ใช้ภาพเดียวกับโลโก้ -->
+  <link rel="icon" type="image/png" href="https://lh5.googleusercontent.com/d/1r7PM1ogHIbxskvcauVIYaQOfSHXWGncO" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-brand">
+      <img
+        src="https://lh5.googleusercontent.com/d/1r7PM1ogHIbxskvcauVIYaQOfSHXWGncO"
+        alt="Hospital Logo"
+        class="app-logo"
+      />
+      <div class="brand-text-group">
+        <span class="brand-title">Vaccine Service Console</span>
+        <span class="brand-subtitle">Influenza Vaccination Management</span>
+      </div>
+    </div>
+    <div class="app-meta">
+      <span class="pill pill-light">Vaxigrip trivalent (Northern)</span>
+    </div>
+  </header>
+
+  <nav class="tabs-nav">
+    <button class="tab-btn active" data-tab="mainTab">บันทึกการฉีด</button>
+    <button class="tab-btn" data-tab="dashboardTab">Dashboard</button>
+  </nav>
+
+  <main class="app-main">
+    <!-- TAB 1: MAIN / REGISTRATION & VACCINATION -->
+    <section id="mainTab" class="tab-panel active">
+      <!-- Search Section -->
+      <section class="card">
+        <div class="card-header-row">
+          <h2>ค้นหาผู้ลงทะเบียน</h2>
+          <span class="card-subtitle">ค้นหาด้วยหมายเลขบัตรประชาชน</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="citizenIdInput">หมายเลขบัตรประชาชน</label>
+            <input type="text" id="citizenIdInput" placeholder="กรอกเลขบัตรประชาชน 13 หลัก" />
+          </div>
+          <div class="form-field align-end">
+            <button id="searchBtn" class="primary-btn">ค้นหา</button>
+          </div>
+        </div>
+        <p id="searchMessage" class="message"></p>
+      </section>
+
+      <!-- Registration Info -->
+      <section id="registrationSection" class="card hidden">
+        <div class="card-header-row">
+          <h2>ข้อมูลผู้ลงทะเบียน</h2>
+        </div>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">ชื่อ-นามสกุล</span>
+            <span class="info-value" id="regFullName"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">หมายเลขบัตรประชาชน</span>
+            <span class="info-value mono" id="regCitizenId"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">เบอร์โทรศัพท์มือถือ</span>
+            <span class="info-value" id="regPhone"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">วันที่ต้องการจองคิว</span>
+            <span class="info-value" id="regAppointmentSlot"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vaccination Form -->
+      <section id="vaccinationSection" class="card hidden">
+        <div class="card-header-row">
+          <h2>บันทึกการฉีดวัคซีน</h2>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>ชนิดวัคซีน</label>
+            <div class="pill pill-muted">Vaxigrip trivalent (Northern)</div>
+            <p class="hint">ระบบกำหนดชนิดวัคซีนตายตัวเพื่อป้องกันการบันทึกผิด</p>
+          </div>
+
+          <div class="form-field">
+            <label for="staffIdInput">Staff ID</label>
+            <input type="text" id="staffIdInput" placeholder="เช่น STF001" />
+            <div id="staffNameDisplay" class="hint"></div>
+          </div>
+
+          <div class="form-field">
+            <label for="vaccinatedAtInput">วันที่/เวลา ฉีด</label>
+            <input type="datetime-local" id="vaccinatedAtInput" />
+            <p class="hint">ถ้าเว้นว่าง ระบบจะบันทึกเป็นเวลาปัจจุบัน</p>
+          </div>
+
+          <div class="form-field">
+            <label for="injectionSiteInput">ตำแหน่งที่ฉีด</label>
+            <select id="injectionSiteInput">
+              <option value="">- เลือก -</option>
+              <option value="L">Left arm</option>
+              <option value="R">Right arm</option>
+            </select>
+          </div>
+
+          <div class="form-field full-width">
+            <label for="notesInput">หมายเหตุ</label>
+            <textarea
+              id="notesInput"
+              rows="3"
+              placeholder="เช่น ไม่มีอาการผิดปกติ, ปวดบริเวณที่ฉีดเล็กน้อย ฯลฯ"
+            ></textarea>
+          </div>
+
+          <div class="form-field full-width align-end">
+            <button id="saveVaccinationBtn" class="primary-btn">บันทึกการฉีด</button>
+          </div>
+        </div>
+
+        <p id="saveMessage" class="message"></p>
+      </section>
+
+      <!-- Vaccination History -->
+      <section id="historySection" class="card hidden">
+        <div class="card-header-row">
+          <h2>ประวัติการฉีดวัคซีน</h2>
+        </div>
+        <div class="table-wrapper">
+          <table id="historyTable">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>วันที่/เวลา ฉีด</th>
+                <th>วัคซีน</th>
+                <th>ตำแหน่ง</th>
+                <th>Staff ID</th>
+                <th>หมายเหตุ</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- TAB 2: DASHBOARD -->
+    <section id="dashboardTab" class="tab-panel">
+      <section class="card">
+        <div class="card-header-row">
+          <h2>Dashboard ภาพรวม</h2>
+        </div>
+
+        <div class="dashboard-summary">
+          <div class="summary-item">
+            <div class="summary-label">ลงทะเบียนทั้งหมด</div>
+            <div class="summary-value" id="dashTotalRegistrations">-</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">ฉีดแล้ว (คน)</div>
+            <div class="summary-value" id="dashTotalUniqueVaccinated">-</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">ยังไม่ฉีด (คน)</div>
+            <div class="summary-value" id="dashTotalUnvaccinated">-</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">จำนวนครั้งที่ฉีด (record)</div>
+            <div class="summary-value" id="dashTotalVaccinations">-</div>
+          </div>
+        </div>
+
+        <h3 class="section-title">สรุปตามช่วงเวลานัด</h3>
+        <div class="table-wrapper">
+          <table id="dashboardSlotTable">
+            <thead>
+              <tr>
+                <th>ช่วงเวลานัด</th>
+                <th>ลงทะเบียน</th>
+                <th>ฉีดแล้ว</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardSlotBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <small>Frontend via GitHub Pages · Backend via Google Apps Script + Google Sheets</small>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
