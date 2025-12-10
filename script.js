@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabButtons = document.querySelectorAll('.tab-btn');
   const staffIdInput = document.getElementById('staffIdInput');
   const refreshDataBtn = document.getElementById('refreshDataBtn');
+  const citizenIdInput = document.getElementById('citizenIdInput');
 
   searchBtn.addEventListener('click', onSearchClick);
   saveVaccinationBtn.addEventListener('click', onSaveVaccinationClick);
@@ -34,10 +35,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Autocomplete เมื่อเริ่มพิมพ์เลขบัตรประชาชน
+  citizenIdInput.addEventListener('input', onCitizenIdInputChange);
+  citizenIdInput.addEventListener('blur', () => {
+    setTimeout(hideSuggestions, 150);
+  });
+
   // โหลดผู้ลงทะเบียนทั้งหมดตอนเริ่ม
   loadAllRegistrations();
 
-  // Auto refresh ทุก 5 นาที (300000 ms)
+  // Auto refresh ทุก 5 นาที (300000 ms) เบื้องหลัง
   setInterval(async () => {
     await loadAllRegistrations();
     if (dashboardLoaded) {
@@ -218,6 +225,71 @@ function calculateAgeFromBirthdateStr(dobStr) {
 }
 
 /**
+ * Autocomplete: Filter ผู้ลงทะเบียนตามเลขบัตรที่เริ่มพิมพ์
+ */
+function onCitizenIdInputChange() {
+  const input = document.getElementById('citizenIdInput');
+  const box = document.getElementById('searchSuggestions');
+  const query = (input.value || '').trim();
+
+  if (!box) return;
+
+  if (!query) {
+    box.classList.add('hidden');
+    box.innerHTML = '';
+    return;
+  }
+
+  const q = query;
+  const matches = allRegistrations
+    .filter(r => r.citizenId && r.citizenId.indexOf(q) === 0)
+    .slice(0, 10);
+
+  if (matches.length === 0) {
+    box.classList.add('hidden');
+    box.innerHTML = '';
+    return;
+  }
+
+  box.innerHTML = '';
+  matches.forEach(r => {
+    const item = document.createElement('div');
+    item.className = 'suggestion-item';
+
+    const left = document.createElement('span');
+    left.className = 'suggestion-primary mono';
+    left.textContent = r.citizenId;
+
+    const right = document.createElement('span');
+    right.className = 'suggestion-secondary';
+    const displayName = r.title
+      ? `${r.title} ${r.fullName || ''}`.trim()
+      : (r.fullName || '');
+    right.textContent = displayName;
+
+    item.appendChild(left);
+    item.appendChild(right);
+
+    item.addEventListener('mousedown', () => {
+      input.value = r.citizenId;
+      box.innerHTML = '';
+      box.classList.add('hidden');
+      onSearchClick();
+    });
+
+    box.appendChild(item);
+  });
+
+  box.classList.remove('hidden');
+}
+
+function hideSuggestions() {
+  const box = document.getElementById('searchSuggestions');
+  if (!box) return;
+  box.classList.add('hidden');
+}
+
+/**
  * ค้นหาผู้ลงทะเบียนจาก citizenId (ค้นจาก cache allRegistrations)
  */
 async function onSearchClick() {
@@ -259,7 +331,12 @@ async function onSearchClick() {
 
 function displayRegistration(reg) {
   document.getElementById('registrationSection').classList.remove('hidden');
-  document.getElementById('regFullName').textContent = reg.fullName || '';
+
+  const displayName = reg.title
+    ? `${reg.title} ${reg.fullName || ''}`.trim()
+    : (reg.fullName || '');
+
+  document.getElementById('regFullName').textContent = displayName;
   document.getElementById('regCitizenId').textContent = reg.citizenId || '';
   document.getElementById('regPhone').textContent = reg.phone || '';
   document.getElementById('regAppointmentSlot').textContent =
@@ -280,7 +357,7 @@ function clearRegistrationDisplay() {
 }
 
 /**
- * ดึงประวัติการฉีดวัคซีน (10 เคสล่าสุดจาก backend)
+ * ดึงประวัติการฉีดวัคซีน (10 เคสล่าสุดของ citizenId นั้น)
  */
 async function loadVaccinationHistory(citizenId) {
   const historySection = document.getElementById('historySection');
@@ -448,7 +525,6 @@ async function onSaveVaccinationClick() {
     document.getElementById('notesExtra').value = '';
     document.getElementById('staffNameDisplay').textContent = '';
 
-    // เคลียร์ผลการค้นหาและประวัติ
     currentCitizenId = null;
     document.getElementById('citizenIdInput').value = '';
     clearRegistrationDisplay();
