@@ -14,7 +14,8 @@
 
 * {
   box-sizing: border-box;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 body {
@@ -22,6 +23,12 @@ body {
   background: radial-gradient(circle at top, #e0edff 0, #f5f7fb 55%);
   min-height: 100vh;
   color: var(--text-main);
+}
+
+/* Utility */
+
+.hidden {
+  display: none;
 }
 
 /* Header */
@@ -42,14 +49,13 @@ body {
 }
 
 .app-logo {
-  width: 220px;        /* เพิ่มความกว้างตามแนวยาว */
-  height: 64px;        /* สูงเท่าเดิม เพื่อให้ดูเป็นแนวนอน */
+  width: 240px; /* เพิ่มความกว้างตามแนวยาว */
+  height: 64px;
   border-radius: 16px;
-  object-fit: contain; /* แสดงโลโก้เต็มโดยไม่ถูกตัด */
+  object-fit: contain;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.25);
-  background: #ffffff; /* ให้มีพื้นหลังขาวรองรับโลโก้ */
+  background: #ffffff;
 }
-
 
 .brand-text-group {
   display: flex;
@@ -88,6 +94,22 @@ body {
 
 .ghost-btn:hover {
   background: #e5ecff;
+}
+
+.primary-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
+}
+
+.primary-btn:hover {
+  filter: brightness(1.05);
 }
 
 /* Pills */
@@ -221,7 +243,6 @@ label {
 }
 
 input[type="text"],
-input[type="datetime-local"],
 select,
 textarea {
   padding: 7px 9px;
@@ -241,22 +262,6 @@ textarea:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.1);
-}
-
-.primary-btn {
-  border: none;
-  border-radius: 999px;
-  padding: 8px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: #ffffff;
-  cursor: pointer;
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
-}
-
-.primary-btn:hover {
-  filter: brightness(1.05);
 }
 
 /* Info */
@@ -283,7 +288,8 @@ textarea:focus {
 }
 
 .mono {
-  font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
 }
 
 /* Messages */
