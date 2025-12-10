@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Vaccine Service Console</title>
 
-  <!-- Favicon ใช้ภาพเดียวกับโลโก้ -->
+  <!-- Favicon -->
   <link
     rel="icon"
     type="image/png"
@@ -44,8 +44,13 @@
       <!-- Search Section -->
       <section class="card">
         <div class="card-header-row">
-          <h2>ค้นหาผู้ลงทะเบียน</h2>
-          <span class="card-subtitle">ค้นหาด้วยหมายเลขบัตรประชาชน</span>
+          <div>
+            <h2>ค้นหาผู้ลงทะเบียน</h2>
+            <span class="card-subtitle">ค้นหาด้วยหมายเลขบัตรประชาชน</span>
+          </div>
+          <div class="card-header-right">
+            <span id="dataCountLabel" class="data-counter"></span>
+          </div>
         </div>
         <div class="form-grid">
           <div class="form-field">
@@ -85,6 +90,10 @@
             <span class="info-label">วันที่ต้องการจองคิว</span>
             <span class="info-value" id="regAppointmentSlot"></span>
           </div>
+          <div class="info-item">
+            <span class="info-label">อายุ</span>
+            <span class="info-value" id="regAge"></span>
+          </div>
         </div>
       </section>
 
@@ -98,7 +107,6 @@
           <div class="form-field">
             <label>ชนิดวัคซีน</label>
             <div class="pill pill-muted">Vaxigrip trivalent (Northern)</div>
-            <p class="hint">ระบบกำหนดชนิดวัคซีนตายตัวเพื่อป้องกันการบันทึกผิด</p>
           </div>
 
           <div class="form-field">
@@ -121,7 +129,9 @@
             <select id="notesPreset">
               <option value="">- เลือกหมายเหตุ -</option>
               <option value="ไม่มีอาการผิดปกติ">ไม่มีอาการผิดปกติ</option>
-              <option value="ปวดบริเวณที่ฉีดเล็กน้อย">ปวดบริเวณที่ฉีดเล็กน้อย</option>
+              <option value="ปวดบริเวณที่ฉีดเล็กน้อย">
+                ปวดบริเวณที่ฉีดเล็กน้อย
+              </option>
               <option value="บวม/แดงบริเวณที่ฉีด">บวม/แดงบริเวณที่ฉีด</option>
               <option value="เวียนศีรษะเล็กน้อย">เวียนศีรษะเล็กน้อย</option>
               <option value="มีประวัติแพ้วัคซีน/ยา ควรเฝ้าระวังใกล้ชิด">
@@ -154,7 +164,7 @@
       <!-- Vaccination History -->
       <section id="historySection" class="card hidden">
         <div class="card-header-row">
-          <h2>ประวัติการฉีดวัคซีน</h2>
+          <h2>ประวัติการฉีดวัคซีน (10 เคสล่าสุด)</h2>
         </div>
         <div class="table-wrapper">
           <table id="historyTable">
