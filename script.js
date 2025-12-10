@@ -3,6 +3,8 @@ const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyGrzscPSTdIgmt2CZ
 
 let currentCitizenId = null;
 let dashboardLoaded = false;
+let allRegistrations = []; // cache ข้อมูลลงทะเบียนทั้งหมด
+let dashboardChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const searchBtn = document.getElementById('searchBtn');
@@ -19,11 +21,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   staffIdInput.addEventListener('blur', onStaffIdBlur);
   staffIdInput.addEventListener('keyup', e => {
-    if (e.key === 'Enter') {
-      onStaffIdBlur();
-    }
+    if (e.key === 'Enter') onStaffIdBlur();
   });
+
+  // โหลดผู้ลงทะเบียนทั้งหมดครั้งเดียว เพื่อให้ค้นหาได้เร็ว
+  loadAllRegistrations();
 });
+
+/**
+ * โหลดผู้ลงทะเบียนทั้งหมดครั้งเดียว
+ */
+async function loadAllRegistrations() {
+  try {
+    const url = `${API_BASE_URL}?action=getAllRegistrations`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.success) {
+      console.warn('ไม่สามารถโหลดข้อมูลลงทะเบียนทั้งหมด:', data.message);
+      return;
+    }
+
+    allRegistrations = data.data || [];
+  } catch (err) {
+    console.error('loadAllRegistrations error:', err);
+  }
+}
 
 /**
  * Tab switch
@@ -45,7 +68,7 @@ function onTabClick(btn) {
 }
 
 /**
- * โหลด Dashboard summary
+ * โหลด Dashboard summary + สร้างกราฟ
  */
 async function loadDashboard() {
   try {
@@ -74,7 +97,15 @@ async function loadDashboard() {
     tbody.innerHTML = '';
 
     const slots = d.slots || [];
+    const labels = [];
+    const regData = [];
+    const vacData = [];
+
     slots.forEach(slotRow => {
+      labels.push(slotRow.slot || '');
+      regData.push(slotRow.registrations != null ? slotRow.registrations : 0);
+      vacData.push(slotRow.vaccinated != null ? slotRow.vaccinated : 0);
+
       const tr = document.createElement('tr');
 
       const tdSlot = document.createElement('td');
@@ -91,13 +122,52 @@ async function loadDashboard() {
 
       tbody.appendChild(tr);
     });
+
+    // สร้าง / อัปเดตกราฟ bar Chart
+    const ctx = document.getElementById('dashboardChart').getContext('2d');
+    if (dashboardChart) {
+      dashboardChart.destroy();
+    }
+    dashboardChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'ลงทะเบียน',
+            data: regData
+          },
+          {
+            label: 'ฉีดแล้ว',
+            data: vacData
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top'
+          }
+        },
+        scales: {
+          x: {
+            ticks: { font: { size: 11 } }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 1 }
+          }
+        }
+      }
+    });
   } catch (err) {
     console.error('Dashboard load error:', err);
   }
 }
 
 /**
- * ค้นหาผู้ลงทะเบียนจาก citizenId
+ * ค้นหาผู้ลงทะเบียนจาก citizenId (จาก cache allRegistrations)
  */
 async function onSearchClick() {
   const citizenIdInput = document.getElementById('citizenIdInput');
@@ -117,32 +187,24 @@ async function onSearchClick() {
   searchMessage.textContent = 'กำลังค้นหา...';
   searchMessage.classList.remove('error');
 
-  try {
-    const url = `${API_BASE_URL}?action=getRegistration&citizenId=${encodeURIComponent(citizenId)}`;
-    const res = await fetch(url);
-    const data = await res.json();
+  // ค้นหาจาก cache
+  const reg = allRegistrations.find(r => r.citizenId === citizenId);
 
-    if (!data.success) {
-      searchMessage.textContent = data.message || 'ไม่สามารถค้นหาข้อมูลได้';
-      searchMessage.classList.add('error');
-      currentCitizenId = null;
-      return;
-    }
-
-    const reg = data.data;
-    currentCitizenId = reg.citizenId;
-    displayRegistration(reg);
-    searchMessage.textContent = 'พบข้อมูลผู้ลงทะเบียน';
-
-    document.getElementById('vaccinationSection').classList.remove('hidden');
-    document.getElementById('staffIdInput').focus();
-
-    await loadVaccinationHistory(currentCitizenId);
-  } catch (err) {
-    console.error(err);
-    searchMessage.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
+  if (!reg) {
+    searchMessage.textContent = 'ไม่พบข้อมูลการลงทะเบียนสำหรับหมายเลขบัตรประชาชนนี้';
     searchMessage.classList.add('error');
+    currentCitizenId = null;
+    return;
   }
+
+  currentCitizenId = reg.citizenId;
+  displayRegistration(reg);
+  searchMessage.textContent = 'พบข้อมูลผู้ลงทะเบียน';
+
+  document.getElementById('vaccinationSection').classList.remove('hidden');
+  document.getElementById('staffIdInput').focus();
+
+  await loadVaccinationHistory(currentCitizenId);
 }
 
 function displayRegistration(reg) {
@@ -193,10 +255,6 @@ async function loadVaccinationHistory(citizenId) {
       tdTimestamp.textContent = rec.timestamp || '';
       tr.appendChild(tdTimestamp);
 
-      const tdVaccinatedAt = document.createElement('td');
-      tdVaccinatedAt.textContent = rec.vaccinatedAt || '';
-      tr.appendChild(tdVaccinatedAt);
-
       const tdVaccineName = document.createElement('td');
       tdVaccineName.textContent = rec.vaccineName || '';
       tr.appendChild(tdVaccineName);
@@ -238,9 +296,7 @@ async function onStaffIdBlur() {
   staffNameDisplay.textContent = '';
   staffNameDisplay.classList.remove('error');
 
-  if (!staffId) {
-    return;
-  }
+  if (!staffId) return;
 
   try {
     const url = `${API_BASE_URL}?action=getStaff&staffId=${encodeURIComponent(staffId)}`;
@@ -276,9 +332,9 @@ async function onSaveVaccinationClick() {
   }
 
   const staffId = (document.getElementById('staffIdInput').value || '').trim();
-  const vaccinatedAtRaw = (document.getElementById('vaccinatedAtInput').value || '').trim();
   const injectionSite = (document.getElementById('injectionSiteInput').value || '').trim();
-  const notes = (document.getElementById('notesInput').value || '').trim();
+  const notesPreset = (document.getElementById('notesPreset').value || '').trim();
+  const notesExtra = (document.getElementById('notesExtra').value || '').trim();
 
   if (!staffId) {
     saveMessage.textContent = 'กรุณากรอก Staff ID';
@@ -288,16 +344,18 @@ async function onSaveVaccinationClick() {
 
   saveMessage.textContent = 'กำลังบันทึก...';
 
-  let vaccinatedAt = '';
-  if (vaccinatedAtRaw) {
-    vaccinatedAt = vaccinatedAtRaw.replace('T', ' ');
+  let notes = '';
+  if (notesPreset) {
+    notes = notesPreset;
+  }
+  if (notesExtra) {
+    notes = notes ? `${notes} - ${notesExtra}` : notesExtra;
   }
 
   const formData = new URLSearchParams();
   formData.append('action', 'saveVaccination');
   formData.append('citizenId', currentCitizenId);
   formData.append('staffId', staffId);
-  formData.append('vaccinatedAt', vaccinatedAt);
   formData.append('injectionSite', injectionSite);
   formData.append('notes', notes);
 
@@ -316,10 +374,11 @@ async function onSaveVaccinationClick() {
 
     saveMessage.textContent = data.message || 'บันทึกเรียบร้อย';
 
+    // เคลียร์ฟอร์ม
     document.getElementById('staffIdInput').value = '';
-    document.getElementById('vaccinatedAtInput').value = '';
     document.getElementById('injectionSiteInput').value = '';
-    document.getElementById('notesInput').value = '';
+    document.getElementById('notesPreset').value = '';
+    document.getElementById('notesExtra').value = '';
     document.getElementById('staffNameDisplay').textContent = '';
 
     await loadVaccinationHistory(currentCitizenId);
