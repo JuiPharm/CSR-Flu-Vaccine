@@ -99,12 +99,6 @@
           </div>
 
           <div class="form-field">
-            <label for="vaccinatedAtInput">วันที่/เวลา ฉีด</label>
-            <input type="datetime-local" id="vaccinatedAtInput" />
-            <p class="hint">ถ้าเว้นว่าง ระบบจะบันทึกเป็นเวลาปัจจุบัน</p>
-          </div>
-
-          <div class="form-field">
             <label for="injectionSiteInput">ตำแหน่งที่ฉีด</label>
             <select id="injectionSiteInput">
               <option value="">- เลือก -</option>
@@ -113,12 +107,26 @@
             </select>
           </div>
 
+          <div class="form-field">
+            <label for="notesPreset">หมายเหตุ (เลือกจากรายการ)</label>
+            <select id="notesPreset">
+              <option value="">- เลือกหมายเหตุ -</option>
+              <option value="ไม่มีอาการผิดปกติ">ไม่มีอาการผิดปกติ</option>
+              <option value="ปวดบริเวณที่ฉีดเล็กน้อย">ปวดบริเวณที่ฉีดเล็กน้อย</option>
+              <option value="บวม/แดงบริเวณที่ฉีด">บวม/แดงบริเวณที่ฉีด</option>
+              <option value="เวียนศีรษะเล็กน้อย">เวียนศีรษะเล็กน้อย</option>
+              <option value="มีประวัติแพ้วัคซีน/ยา ควรเฝ้าระวังใกล้ชิด">มีประวัติแพ้วัคซีน/ยา ควรเฝ้าระวังใกล้ชิด</option>
+              <option value="ส่งต่อพบแพทย์">ส่งต่อพบแพทย์</option>
+              <option value="อื่นๆ">อื่นๆ (ระบุเพิ่มเติมด้านล่าง)</option>
+            </select>
+          </div>
+
           <div class="form-field full-width">
-            <label for="notesInput">หมายเหตุ</label>
+            <label for="notesExtra">รายละเอียดเพิ่มเติม (ถ้ามี)</label>
             <textarea
-              id="notesInput"
+              id="notesExtra"
               rows="3"
-              placeholder="เช่น ไม่มีอาการผิดปกติ, ปวดบริเวณที่ฉีดเล็กน้อย ฯลฯ"
+              placeholder="เช่น ระบุอาการเพิ่มเติม/ข้อควรระวัง ฯลฯ"
             ></textarea>
           </div>
 
@@ -139,8 +147,7 @@
           <table id="historyTable">
             <thead>
               <tr>
-                <th>Timestamp</th>
-                <th>วันที่/เวลา ฉีด</th>
+                <th>Timestamp (เวลาบันทึก)</th>
                 <th>วัคซีน</th>
                 <th>ตำแหน่ง</th>
                 <th>Staff ID</th>
@@ -179,7 +186,12 @@
           </div>
         </div>
 
-        <h3 class="section-title">สรุปตามช่วงเวลานัด</h3>
+        <h3 class="section-title">กราฟสรุปตามช่วงเวลานัด</h3>
+        <div class="chart-wrapper">
+          <canvas id="dashboardChart"></canvas>
+        </div>
+
+        <h3 class="section-title">ตารางสรุปตามช่วงเวลานัด</h3>
         <div class="table-wrapper">
           <table id="dashboardSlotTable">
             <thead>
@@ -200,6 +212,8 @@
     <small>Frontend via GitHub Pages · Backend via Google Apps Script + Google Sheets</small>
   </footer>
 
+  <!-- Chart.js สำหรับกราฟ Dashboard -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
