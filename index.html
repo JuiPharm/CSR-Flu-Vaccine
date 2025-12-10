@@ -65,6 +65,10 @@
             <button id="searchBtn" class="primary-btn">ค้นหา</button>
           </div>
         </div>
+
+        <!-- Suggestion list -->
+        <div id="searchSuggestions" class="suggestions hidden"></div>
+
         <p id="searchMessage" class="message"></p>
       </section>
 
@@ -161,10 +165,10 @@
         <p id="saveMessage" class="message"></p>
       </section>
 
-      <!-- Vaccination History -->
+      <!-- Vaccination History for selected citizen -->
       <section id="historySection" class="card hidden">
         <div class="card-header-row">
-          <h2>ประวัติการฉีดวัคซีน (10 เคสล่าสุด)</h2>
+          <h2>ประวัติการฉีดวัคซีน (10 เคสล่าสุดของผู้ป่วยนี้)</h2>
         </div>
         <div class="table-wrapper">
           <table id="historyTable">
