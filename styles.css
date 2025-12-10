@@ -42,13 +42,14 @@ body {
 }
 
 .app-logo {
-  width: 64px;
-  height: 64px;
+  width: 110px;        /* เพิ่มความกว้างตามแนวยาว */
+  height: 64px;        /* สูงเท่าเดิม เพื่อให้ดูเป็นแนวนอน */
   border-radius: 16px;
-  object-fit: cover;
+  object-fit: contain; /* แสดงโลโก้เต็มโดยไม่ถูกตัด */
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.25);
-  background: #ffffff;
+  background: #ffffff; /* ให้มีพื้นหลังขาวรองรับโลโก้ */
 }
+
 
 .brand-text-group {
   display: flex;
@@ -68,6 +69,25 @@ body {
 
 .app-meta {
   font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Buttons */
+
+.ghost-btn {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.ghost-btn:hover {
+  background: #e5ecff;
 }
 
 /* Pills */
