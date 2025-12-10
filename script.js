@@ -1,4 +1,4 @@
-// TODO: แก้เป็น Web App URL ที่คุณ Deploy แล้ว (ลงท้ายด้วย /exec)
+// แก้เป็น Web App URL ที่คุณ Deploy แล้ว (ลงท้ายด้วย /exec)
 const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyGrzscPSTdIgmt2CZ5dCA8McvdUe4ca58gVdccD9loEMgvk25tWD0rVNmPOj2C-nNo/exec';
 
 let currentCitizenId = null;
@@ -61,6 +61,14 @@ async function loadAllRegistrations() {
     }
 
     allRegistrations = data.data || [];
+
+    // แสดงจำนวนข้อมูลทั้งหมด
+    const label = document.getElementById('dataCountLabel');
+    if (label) {
+      label.textContent = `ข้อมูลทั้งหมด: ${allRegistrations.length.toLocaleString(
+        'th-TH'
+      )} ราย`;
+    }
   } catch (err) {
     console.error('loadAllRegistrations error:', err);
   }
@@ -184,6 +192,32 @@ async function loadDashboard() {
 }
 
 /**
+ * คำนวณอายุจากวันเกิด (string mm/dd/yyyy หรือ Date ที่ parse ได้)
+ */
+function calculateAgeFromBirthdateStr(dobStr) {
+  if (!dobStr) return '';
+  let d = new Date(dobStr);
+  if (isNaN(d.getTime())) {
+    const parts = dobStr.split('/');
+    if (parts.length === 3) {
+      const m = parseInt(parts[0], 10) - 1;
+      const day = parseInt(parts[1], 10);
+      const y = parseInt(parts[2], 10);
+      d = new Date(y, m, day);
+    }
+  }
+  if (isNaN(d.getTime())) return '';
+
+  const today = new Date();
+  let age = today.getFullYear() - d.getFullYear();
+  const mDiff = today.getMonth() - d.getMonth();
+  if (mDiff < 0 || (mDiff === 0 && today.getDate() < d.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+/**
  * ค้นหาผู้ลงทะเบียนจาก citizenId (ค้นจาก cache allRegistrations)
  */
 async function onSearchClick() {
@@ -230,6 +264,10 @@ function displayRegistration(reg) {
   document.getElementById('regPhone').textContent = reg.phone || '';
   document.getElementById('regAppointmentSlot').textContent =
     reg.appointmentSlot || '';
+
+  const age = calculateAgeFromBirthdateStr(reg.birthDate);
+  document.getElementById('regAge').textContent =
+    age === '' ? '-' : `${age} ปี`;
 }
 
 function clearRegistrationDisplay() {
@@ -238,10 +276,11 @@ function clearRegistrationDisplay() {
   document.getElementById('regCitizenId').textContent = '';
   document.getElementById('regPhone').textContent = '';
   document.getElementById('regAppointmentSlot').textContent = '';
+  document.getElementById('regAge').textContent = '';
 }
 
 /**
- * ดึงประวัติการฉีดวัคซีน
+ * ดึงประวัติการฉีดวัคซีน (10 เคสล่าสุดจาก backend)
  */
 async function loadVaccinationHistory(citizenId) {
   const historySection = document.getElementById('historySection');
@@ -402,14 +441,22 @@ async function onSaveVaccinationClick() {
 
     saveMessage.textContent = data.message || 'บันทึกเรียบร้อย';
 
+    // เคลียร์ฟอร์ม + เตรียมพร้อมสำหรับเคสใหม่
     document.getElementById('staffIdInput').value = '';
     document.getElementById('injectionSiteInput').value = '';
     document.getElementById('notesPreset').value = '';
     document.getElementById('notesExtra').value = '';
     document.getElementById('staffNameDisplay').textContent = '';
 
-    await loadVaccinationHistory(currentCitizenId);
+    // เคลียร์ผลการค้นหาและประวัติ
+    currentCitizenId = null;
+    document.getElementById('citizenIdInput').value = '';
+    clearRegistrationDisplay();
+    clearHistoryDisplay();
+    document.getElementById('vaccinationSection').classList.add('hidden');
+    document.getElementById('searchMessage').textContent = '';
 
+    // รีโหลด Dashboard (ถ้าเปิดอยู่)
     if (dashboardLoaded) {
       await loadDashboard();
     }
