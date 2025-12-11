@@ -14,42 +14,54 @@ document.addEventListener('DOMContentLoaded', () => {
   const refreshDataBtn = document.getElementById('refreshDataBtn');
   const citizenIdInput = document.getElementById('citizenIdInput');
 
+  // Search button
   searchBtn.addEventListener('click', onSearchClick);
+  citizenIdInput.addEventListener('keyup', e => {
+    if (e.key === 'Enter') onSearchClick();
+  });
+
+  // Save button
   saveVaccinationBtn.addEventListener('click', onSaveVaccinationClick);
 
+  // Tabs
   tabButtons.forEach(btn => {
     btn.addEventListener('click', () => onTabClick(btn));
   });
 
+  // Staff ID check
   staffIdInput.addEventListener('blur', onStaffIdBlur);
   staffIdInput.addEventListener('keyup', e => {
     if (e.key === 'Enter') onStaffIdBlur();
   });
 
+  // Refresh data button
   if (refreshDataBtn) {
     refreshDataBtn.addEventListener('click', async () => {
       await loadAllRegistrations();
       if (dashboardLoaded) {
         await loadDashboard();
       }
+      await loadGlobalHistory();
     });
   }
 
-  // Autocomplete เมื่อเริ่มพิมพ์เลขบัตรประชาชน
+  // Autocomplete citizen ID
   citizenIdInput.addEventListener('input', onCitizenIdInputChange);
   citizenIdInput.addEventListener('blur', () => {
     setTimeout(hideSuggestions, 150);
   });
 
-  // โหลดผู้ลงทะเบียนทั้งหมดตอนเริ่ม
+  // Initial load
   loadAllRegistrations();
+  loadGlobalHistory();
 
-  // Auto refresh ทุก 5 นาที (300000 ms) เบื้องหลัง
+  // Auto refresh ทุก 5 นาที
   setInterval(async () => {
     await loadAllRegistrations();
     if (dashboardLoaded) {
       await loadDashboard();
     }
+    await loadGlobalHistory();
   }, 5 * 60 * 1000);
 });
 
@@ -298,7 +310,6 @@ async function onSearchClick() {
   const searchMessage = document.getElementById('searchMessage');
 
   clearRegistrationDisplay();
-  clearHistoryDisplay();
   document.getElementById('vaccinationSection').classList.add('hidden');
 
   if (!citizenId) {
@@ -325,8 +336,6 @@ async function onSearchClick() {
 
   document.getElementById('vaccinationSection').classList.remove('hidden');
   document.getElementById('staffIdInput').focus();
-
-  await loadVaccinationHistory(currentCitizenId);
 }
 
 function displayRegistration(reg) {
@@ -357,9 +366,9 @@ function clearRegistrationDisplay() {
 }
 
 /**
- * ดึงประวัติการฉีดวัคซีน (10 เคสล่าสุดของ citizenId นั้น)
+ * โหลดประวัติการฉีดวัคซีน (10 เคสล่าสุดจาก VaccinationLog เสมอ)
  */
-async function loadVaccinationHistory(citizenId) {
+async function loadGlobalHistory() {
   const historySection = document.getElementById('historySection');
   const historyBody = document.getElementById('historyBody');
 
@@ -367,14 +376,12 @@ async function loadVaccinationHistory(citizenId) {
   historySection.classList.add('hidden');
 
   try {
-    const url = `${API_BASE_URL}?action=getVaccinationHistory&citizenId=${encodeURIComponent(
-      citizenId
-    )}`;
+    const url = `${API_BASE_URL}?action=getLatestVaccinations`;
     const res = await fetch(url);
     const data = await res.json();
 
     if (!data.success) {
-      console.warn('Failed to load history:', data.message);
+      console.warn('Failed to load global history:', data.message);
       return;
     }
 
@@ -389,6 +396,10 @@ async function loadVaccinationHistory(citizenId) {
       const tdTimestamp = document.createElement('td');
       tdTimestamp.textContent = rec.timestamp || '';
       tr.appendChild(tdTimestamp);
+
+      const tdFullName = document.createElement('td');
+      tdFullName.textContent = rec.fullName || '';
+      tr.appendChild(tdFullName);
 
       const tdVaccineName = document.createElement('td');
       tdVaccineName.textContent = rec.vaccineName || '';
@@ -411,13 +422,8 @@ async function loadVaccinationHistory(citizenId) {
 
     historySection.classList.remove('hidden');
   } catch (err) {
-    console.error('Error loading history:', err);
+    console.error('Error loading global history:', err);
   }
-}
-
-function clearHistoryDisplay() {
-  document.getElementById('historyBody').innerHTML = '';
-  document.getElementById('historySection').classList.add('hidden');
 }
 
 /**
@@ -518,19 +524,18 @@ async function onSaveVaccinationClick() {
 
     saveMessage.textContent = data.message || 'บันทึกเรียบร้อย';
 
-    // เคลียร์ฟอร์ม + เตรียมพร้อมสำหรับเคสใหม่
+    // เคลียร์เฉพาะฟิลด์ในฟอร์มฉีดวัคซีน
     document.getElementById('staffIdInput').value = '';
     document.getElementById('injectionSiteInput').value = '';
     document.getElementById('notesPreset').value = '';
     document.getElementById('notesExtra').value = '';
     document.getElementById('staffNameDisplay').textContent = '';
 
-    currentCitizenId = null;
-    document.getElementById('citizenIdInput').value = '';
-    clearRegistrationDisplay();
-    clearHistoryDisplay();
-    document.getElementById('vaccinationSection').classList.add('hidden');
-    document.getElementById('searchMessage').textContent = '';
+    // การ์ดข้อมูลผู้ลงทะเบียน และประวัติการฉีดวัคซีนยังคงอยู่เหมือนเดิม
+    // currentCitizenId ยังไม่ถูกล้าง ผู้ใช้สามารถกดบันทึกซ้ำไม่ได้ (backend ตรวจซ้ำ)
+
+    // อัปเดตประวัติ 10 เคสล่าสุดเสมอ
+    await loadGlobalHistory();
 
     // รีโหลด Dashboard (ถ้าเปิดอยู่)
     if (dashboardLoaded) {
