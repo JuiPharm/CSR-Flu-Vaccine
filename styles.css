@@ -48,7 +48,7 @@ body {
 
 .app-logo {
   width: 240px;
-  height: 64px;
+  height: 72px;
   border-radius: 16px;
   object-fit: contain;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.25);
